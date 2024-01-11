@@ -6,7 +6,7 @@ const port = 3000;
 app.use(express.json());
 
 // Configura CORS para permitir solicitudes desde http://localhost:5173
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'https://www.downloadmusic.cloud/' }));
 
 // Resto de tu configuración...
 app.use('/', route);
