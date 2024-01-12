@@ -5,11 +5,20 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 
-// Configura CORS para permitir solicitudes desde http://localhost:5173
-app.use(cors({ origin: 'https://www.downloadmusic.cloud/' }));
-
-// Resto de tu configuración...
 app.use('/', route);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://www.downloadmusic.cloud");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "x-auth-token, Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, DELETE, PATCH"
+  );
+  next();
+});
 
 app.listen(port, () => {
   console.log(`Server is running on ${port}`);
