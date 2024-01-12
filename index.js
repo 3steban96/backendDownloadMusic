@@ -14,11 +14,14 @@ const downloadAudio = async (url, audioOptions, response) => {
 
     const audioWriteStream = fs.createWriteStream(`${sanitizedTitle}.mp3`);
 
-    audio.pipe(audioWriteStream);
-
+    const audioBuffer = [];
+    audio.on('data', (chunk) => {
+      audioBuffer.push(chunk);
+    });
+    
     audio.on('end', () => {
-      console.log('Descarga de audio completada.');
-      response.json({ message: 'Descarga de audio completada.', fileName: `${sanitizedTitle}.mp3` });
+      const audioData = Buffer.concat(audioBuffer).toString('base64');
+      response.json({ message: 'Descarga de audio completada.', fileName: `${sanitizedTitle}.mp3`, audioData });
     });
 
     audio.on('error', (error) => {
