@@ -54,8 +54,16 @@ const downloadVideo = async (urlMp4, response) => {
     video.on('end', () => {
       console.log('Descarga completada.');
 
+      // Establecer el encabezado Content-Disposition para sugerir el nombre de archivo al navegador
       response.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.mp4"`);
-      response.json({ success: true, fileName: `${sanitizedTitle}.mp4` });
+      response.sendFile(path.resolve(`${sanitizedTitle}.mp4`), {}, (err) => {
+        if (err) {
+          console.error('Error al enviar el archivo al cliente:', err.message);
+          response.status(500).json({ error: 'Error al enviar el archivo al cliente.' });
+        } else {
+          console.log('Archivo enviado al cliente correctamente.');
+        }
+      });
     });
 
     video.on('error', (error) => {
