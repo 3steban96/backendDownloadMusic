@@ -1,15 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const { downloadAudio } = require('./index.js');
+const { downloadAudio, downloadVideo, getInformation } = require('./index.js');
 
 router.post('/download', async (req, res) => {
   const { videoURL } = req.body;
-
-  // Validar la URL, si es necesario
-
-  // Llamar a la función downloadAudio con la URL proporcionada
   await downloadAudio(videoURL, { quality: 'highestaudio', filter: 'audioonly' }, res);
 });
-
+router.post('/downloadMp4',async(req,res)=>{
+  const {urlMp4}= req.body;
+  
+  await downloadVideo(urlMp4,{quality:'highestvideo'},res)
+});
+router.post('/getInformation', async (req, res) => {
+  const { urlMp4 } = req.body;
+  try {
+    const informacion = await getInformation(urlMp4);
+    res.json(informacion);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener información del video' });
+  }
+});
 module.exports = router;
 

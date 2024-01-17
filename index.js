@@ -3,22 +3,23 @@ const ytdl = require('ytdl-core');
 
 const downloadAudio = async (url, audioOptions, response) => {
   try {
-    // Obtener información del video para obtener el título
     const videoInfo = await ytdl.getInfo(url);
     const videoTitle = videoInfo.videoDetails.title;
 
-    // Reemplazar caracteres no permitidos en nombres de archivo
     const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
 
     const audio = ytdl(url, audioOptions);
 
     const audioWriteStream = fs.createWriteStream(`${sanitizedTitle}.mp3`);
 
-    audio.pipe(audioWriteStream);
-
+    const audioBuffer = [];
+    audio.on('data', (chunk) => {
+      audioBuffer.push(chunk);
+    });
+    
     audio.on('end', () => {
-      console.log('Descarga de audio completada.');
-      response.json({ message: 'Descarga de audio completada.', fileName: `${sanitizedTitle}.mp3` });
+      const audioData = Buffer.concat(audioBuffer).toString('base64');
+      response.json({ message: 'Descarga de audio completada.', fileName: `${sanitizedTitle}.mp3`, audioData });
     });
 
     audio.on('error', (error) => {
@@ -35,5 +36,46 @@ const downloadAudio = async (url, audioOptions, response) => {
     response.status(500).json({ error: 'Error al obtener información del video.' });
   }
 };
-
-module.exports = { downloadAudio };
+const downloadVideo = async (urlMp4,response)=>{
+  try {
+      const options = {
+        quality: 'highestvideo',
+        filter: 'videoandaudio',
+      };
+      const video = ytdl(urlMp4, options);
+      const videoInfo = await ytdl.getInfo(urlMp4);
+      const videoTitle = videoInfo.videoDetails.title;
+  
+      const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+      video.pipe(fs.createWriteStream(`${sanitizedTitle}.mp4`));
+    
+      video.on('end', () => {
+        console.log('Descarga completada.');
+      });
+    
+      video.on('error', (error) => {
+        console.error('Error al descargar el video:', error.message);
+      });
+    
+      video.on('progress', (chunkLength, downloaded, total) => {
+        const percent = (downloaded / total) * 100;
+        console.log(`Descargando: ${percent.toFixed(2)}%`);
+      });
+  } catch (error) {
+    console.error('Error al obtener información del video:', error.message);
+    response.status(500).json({ error: 'Error al obtener información del video.' });
+  }
+};
+const getInformation = async  (urlMp4) =>{
+  try {
+    const info = await ytdl.getBasicInfo(urlMp4);
+    const singer = info.videoDetails.author.name;
+    const song = info.videoDetails.title;
+    const thumbnail = info.videoDetails.thumbnails[3];
+    return {singer, song, thumbnail};
+  } catch (error) {
+    console.error('Error al obtener información del video:', error.message);
+    throw error;
+  }
+}
+module.exports = { downloadAudio, downloadVideo, getInformation };
