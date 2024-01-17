@@ -36,26 +36,40 @@ const downloadAudio = async (url, audioOptions, response) => {
     response.status(500).json({ error: 'Error al obtener información del video.' });
   }
 };
-const downloadVideo = async (urlMp4) => {
+const downloadVideo = async (urlMp4,response)=>{
   try {
-    const options = {
-      quality: 'highestvideo',
-      filter: 'videoandaudio',
-    };
-
-    const videoInfo = await ytdl.getInfo(urlMp4);
-    const videoTitle = videoInfo.videoDetails.title;
-
-    const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
-    const fileName = `${sanitizedTitle}.mp4`;
-
-    return {
-      fileName,
-      videoData: ytdl(urlMp4, options),
-    };
+      const options = {
+        quality: 'highestvideo',
+        filter: 'videoandaudio',
+      };
+      const video = ytdl(urlMp4, options);
+      const videoInfo = await ytdl.getInfo(urlMp4);
+      const videoTitle = videoInfo.videoDetails.title;
+  
+      const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+      video.pipe(fs.createWriteStream(`${sanitizedTitle}.mp4`));
+    
+      video.on('end', () => {
+        console.log('Descarga completada.');
+      });
+    
+      video.on('error', (error) => {
+        console.error('Error al descargar el video:', error.message);
+      });
+    
+      video.on('progress', (chunkLength, downloaded, total) => {
+        const percent = (downloaded / total) * 100;
+        console.log(`Descargando: ${percent.toFixed(2)}%`);
+      });
+      videoWriteStream.on('finish', () => {
+        console.log('Escritura del archivo de video finalizada.');
+  
+        response.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.mp4"`);
+        response.json({ success: true, fileName: `${sanitizedTitle}.mp4` });
+      });
   } catch (error) {
     console.error('Error al obtener información del video:', error.message);
-    throw new Error('Error al obtener información del video.');
+    response.status(500).json({ error: 'Error al obtener información del video.' });
   }
 };
 const getInformation = async  (urlMp4) =>{
