@@ -6,11 +6,12 @@ router.post('/download', async (req, res) => {
   const { videoURL } = req.body;
   await downloadAudio(videoURL, { quality: 'highestaudio', filter: 'audioonly' }, res);
 });
-router.post('/downloadMp4',async(req,res)=>{
-  const {urlMp4}= req.body;
-  
-  await downloadVideo(urlMp4,{quality:'highestvideo'},res)
+router.post('/downloadMp4', async (req, res) => {
+  const { urlMp4 } = req.body;
+
+  await downloadVideo(urlMp4, res); // Cambia aquí
 });
+
 router.post('/getInformation', async (req, res) => {
   const { urlMp4 } = req.body;
   try {

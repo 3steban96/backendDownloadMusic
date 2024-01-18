@@ -1,6 +1,5 @@
 const fs = require('fs');
 const ytdl = require('ytdl-core');
-
 const { promisify } = require('util');
 const pipeline = promisify(require('stream').pipeline);
 
@@ -41,34 +40,109 @@ const downloadAudio = async (url, audioOptions, response) => {
 };
 
 
-const downloadVideo = async (urlMp4,response)=>{
-  try {
-      const options = {
-        quality: 'highestvideo',
-        filter: 'videoandaudio',
-      };
-      const video = ytdl(urlMp4, options);
-      const videoInfo = await ytdl.getInfo(urlMp4);
-      const videoTitle = videoInfo.videoDetails.title;
+// const downloadVideo = async (urlMp4,response)=>{
+//   try {
+//       const options = {
+//         quality: 'highestvideo',
+//         filter: 'videoandaudio',
+//       };
+//       const video = ytdl(urlMp4, options);
+//       const videoInfo = await ytdl.getInfo(urlMp4);
+//       const videoTitle = videoInfo.videoDetails.title;
   
-      const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
-      video.pipe(fs.createWriteStream(`${sanitizedTitle}.mp4`));
+//       const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+//       video.pipe(fs.createWriteStream(`${sanitizedTitle}.mp4`));
     
-      video.on('end', () => {
-        console.log('Descarga completada.');
-      });
+//       video.on('end', () => {
+//         console.log('Descarga completada.');
+//       });
     
-      video.on('error', (error) => {
-        console.error('Error al descargar el video:', error.message);
-      });
+//       video.on('error', (error) => {
+//         console.error('Error al descargar el video:', error.message);
+//       });
     
-      video.on('progress', (chunkLength, downloaded, total) => {
-        const percent = (downloaded / total) * 100;
-        console.log(`Descargando: ${percent.toFixed(2)}%`);
-      });
+//       video.on('progress', (chunkLength, downloaded, total) => {
+//         const percent = (downloaded / total) * 100;
+//         console.log(`Descargando: ${percent.toFixed(2)}%`);
+//       });
+//   } catch (error) {
+//     console.error('Error al obtener información del video:', error.message);
+//     response.status(500).json({ error: 'Error al obtener información del video.' });
+//   }
+// };
+// const downloadVideo = async (urlMp4, res) => {
+//   try {
+//     const options = {
+//       quality: 'highestvideo',
+//       filter: 'videoandaudio',
+//     };
+
+//     const video = ytdl(urlMp4, options);
+
+//     const videoInfo = await ytdl.getInfo(urlMp4);
+//     const videoTitle = videoInfo.videoDetails.title;
+
+//     const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+//     const fileName = `${sanitizedTitle}.mp4`;
+
+//     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+//     res.setHeader('Content-Type', 'video/mp4');
+
+//     video.pipe(res);
+
+//     video.on('end', () => {
+//       console.log('Descarga completada.');
+//     });
+
+//     video.on('error', (error) => {
+//       console.error('Error al descargar el video:', error.message);
+//       res.status(500).json({ error: 'Error al descargar el video.' });
+//     });
+
+//     video.on('progress', (chunkLength, downloaded, total) => {
+//       const percent = (downloaded / total) * 100;
+//       console.log(`Descargando: ${percent.toFixed(2)}%`);
+//     });
+//   } catch (error) {
+//     console.error('Error al obtener información del video:', error.message);
+//     res.status(500).json({ error: 'Error al obtener información del video.' });
+//   }
+// };
+const downloadVideo = async (urlMp4, res) => {
+  try {
+    const options = {
+      quality: 'highestvideo',
+      filter: 'videoandaudio',
+    };
+
+    const video = ytdl(urlMp4, options);
+    const videoInfo = await ytdl.getInfo(urlMp4);
+    const videoTitle = videoInfo.videoDetails.title;
+
+    const sanitizedTitle = videoTitle.replace(/[/\\?%*:|"<>]/g, '-');
+    const fileName = `${sanitizedTitle}.mp4`;
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'video/mp4');
+
+    video.pipe(res);
+
+    video.on('end', () => {
+      console.log('Descarga completada.');
+    });
+
+    video.on('error', (error) => {
+      console.error('Error al descargar el video:', error.message);
+      res.status(500).json({ error: 'Error al descargar el video.' });
+    });
+
+    video.on('progress', (chunkLength, downloaded, total) => {
+      const percent = (downloaded / total) * 100;
+      console.log(`Descargando: ${percent.toFixed(2)}%`);
+    });
   } catch (error) {
     console.error('Error al obtener información del video:', error.message);
-    response.status(500).json({ error: 'Error al obtener información del video.' });
+    res.status(500).json({ error: 'Error al obtener información del video.' });
   }
 };
 
