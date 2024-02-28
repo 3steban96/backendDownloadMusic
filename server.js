@@ -5,7 +5,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'https://www.downloadmusic.cloud',
+  origin: '*',
   credentials: true,
   methods: 'GET, POST, OPTIONS, PUT, DELETE, PATCH',
   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, x-auth-token',
